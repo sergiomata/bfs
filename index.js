@@ -8,30 +8,28 @@ const bfs = (objField,fieldName, bigQuerySchema,recordFieldsSolved) => {
     return elem.name === objField
   }); 
   // let query = "";
-   const schemaFields = schemaObj.fields;
-  const recordFields = [];
+  console.log("schemaObj: ",objField)
+   const schemaFields = schemaObj.fields
+  const recordFields = []
   let tableName
   schemaFields.forEach(field => {
     if (field.type === 'RECORD' ){
       tableName = `${fieldName}.${field.name}`
-      recordFields.push({name:field.name,tableName});
+      recordFields.push({name:field.name,tableName})
     }else{
       if (field.type === 'RECORD' ){
         tableName = `${fieldName}.${field.name}`
-        recordFields.push({name:field.name,tableName});
+        recordFields.push({name:field.name,tableName})
       }else{
       tableName = `${fieldName}.${field.name}, `
-      recordFieldsSolved.push({name:field.name,tableName});
+      recordFieldsSolved.push({name:field.name,tableName})
       }
     }
   });
-  // if(recordFields.length === 0){
-  // return recordFieldsSolved
-  // }else {
-  //   recordFields.forEach(field => {
-  //     recordFields.push(bfs(field,fieldName, bigQuerySchema,recordFieldsSolved));
-  //   });
-  // }
+    recordFields.forEach(field => {
+      recordFields.push(bfs(field.name,field.tableName, schemaFields,recordFieldsSolved))
+    });
+
   console.log("recordFields: ", recordFields)
   return recordFieldsSolved
 }
