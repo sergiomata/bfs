@@ -2,7 +2,7 @@
 const { messageBigQuerySchema } = require ("./bdSchema")
 const { messageSchema } = require("./inputSchema")
 
-const bfs = (objField,fieldName, bigQuerySchema,recordFieldsSolved) => {
+const bfs = (objField,fieldName, bigQuerySchema,recordFieldsSolved,keys) => {
 
   const schemaObj = bigQuerySchema.find(elem => {
     return elem.name === objField
@@ -23,14 +23,16 @@ const bfs = (objField,fieldName, bigQuerySchema,recordFieldsSolved) => {
       }else{
       tableName = `${fieldName}.${field.name}, `
       recordFieldsSolved.push({name:field.name,tableName})
+      keys.push(tableName)
       }
     }
   });
     recordFields.forEach(field => {
-      recordFields.push(bfs(field.name,field.tableName, schemaFields,recordFieldsSolved))
+      // 
+      bfs(field.name,field.tableName, schemaFields,recordFieldsSolved,keys)// )
     });
 
-  console.log("recordFields: ", recordFields)
+  //console.log("recordFields: ", recordFields)
   return recordFieldsSolved
 }
 
@@ -49,21 +51,18 @@ const begin = () => {
   for (const field of schemafields) {
     let fieldType = schema[field].type
     let name = schema[field].dbName ? schema[field].dbName : field
-    keys.push(name)
-
     if (fieldType === "object") {
       // values += createQueryObject(name, bigQuerySchema);
       fieldName = `SourceTable.${name}`
       recordFields.push({name,fieldName})
+    } else {
+      fieldName = `SourceTable.${name}, `
+      keys.push(fieldName)
     }
-    // } else {
-    //   fieldName = `SourceTable.${name}, `
-    //   values += `SourceTable.${name}, `;
-    // }
   }
   recordFields.forEach(field => {
     console.log("field: ", field)
-    bfs(field.name,field.fieldName,bigQuerySchema,recordFieldsSolved)
+    bfs(field.name,field.fieldName,bigQuerySchema,recordFieldsSolved,keys)
   });
 
   // let stringFields = keys.join(",");
@@ -72,7 +71,8 @@ const begin = () => {
   // let insertQuery = `INSERT (${stringFields}) VALUES(${values})`;
   //console.log("insertQuery: ", insertQuery);
   // return insertQuery;
-  console.log("recordFieldsSolved final : ",recordFieldsSolved)
+  //console.log("recordFieldsSolved final : ",recordFieldsSolved)
+  console.log("keys: ", keys)
   return recordFieldsSolved
 }
 
